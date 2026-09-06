@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../presentation/products_provider.dart';
-import '../models/product.dart';
+import 'package:my_shop/presentation/cart_provider.dart';
+import 'package:my_shop/presentation/favorites_provider.dart';
+import 'package:my_shop/presentation/filter_provider.dart';
 import '../utils/product_sort_item.dart';
 import 'product_detail_screen.dart';
 import 'cart_screen.dart';
