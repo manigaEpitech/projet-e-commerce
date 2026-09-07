@@ -17,7 +17,7 @@ class ProfileNotifier extends StateNotifier<UserProfile> {
         ),
       );
 
-  void updateName(String newName) {
+  void  updateName(String newName) {
     state = UserProfile(
       name: newName,
       email: state.email,
