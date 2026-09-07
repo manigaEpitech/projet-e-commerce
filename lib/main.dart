@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'data/local_storage_service.dart';
 
-import 'screens/catalog_screen.dart';
+import 'presentation/screens/catalog_screen.dart';
 
 void main() async {
   // Garantir l'initialisation des liaisons Flutter avant le chargement asynchrone des SharedPreferences
@@ -36,3 +36,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+ 

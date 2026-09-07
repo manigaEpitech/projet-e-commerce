@@ -1,4 +1,6 @@
-/// Modèle représentant un produit du catalogue.
+import 'package:flutter/foundation.dart';
+
+@immutable
 class Product {
   final String id;
   final String title;
@@ -7,7 +9,7 @@ class Product {
   final String imageUrl;
   final String description;
 
-  Product({
+  const Product({
     required this.id,
     required this.title,
     required this.price,
@@ -16,7 +18,7 @@ class Product {
     required this.imageUrl,
   });
 
-  /// Permet de créer un objet Product à partir d'un JSON factice.
+  /// CORRIGÉ : Ajout de la méthode de désérialisation JSON manquante
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       id: json['id'] as String,
@@ -27,16 +29,55 @@ class Product {
       imageUrl: json['imageUrl'] as String,
     );
   }
+
+  Product copyWith({
+    String? id,
+    String? title,
+    double? price,
+    String? category,
+    String? imageUrl,
+    String? description,
+  }) {
+    return Product(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      price: price ?? this.price,
+      category: category ?? this.category,
+      imageUrl: imageUrl ?? this.imageUrl,
+      description: description ?? this.description,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Product &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          title == other.title &&
+          price == other.price &&
+          category == other.category &&
+          imageUrl == other.imageUrl &&
+          description == other.description;
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      title.hashCode ^
+      price.hashCode ^
+      category.hashCode ^
+      imageUrl.hashCode ^
+      description.hashCode;
 }
 
-/// Représente un élément ajouté dans le panier d'achats.
+@immutable
 class CartItem {
   final Product product;
   final int quantity;
+  final double totalPrice;
 
-  CartItem({required this.product, this.quantity = 1});
-
-  double get totalPrice => product.price * quantity;
+  CartItem({required this.product, this.quantity = 1})
+    : totalPrice = product.price * quantity;
 
   CartItem copyWith({Product? product, int? quantity}) {
     return CartItem(
@@ -44,4 +85,15 @@ class CartItem {
       quantity: quantity ?? this.quantity,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CartItem &&
+          runtimeType == other.runtimeType &&
+          product == other.product &&
+          quantity == other.quantity;
+
+  @override
+  int get hashCode => product.hashCode ^ quantity.hashCode;
 }
