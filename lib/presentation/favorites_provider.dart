@@ -1,17 +1,31 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import '../../data/local_storage_service.dart';
 
 class FavoritesNotifier extends StateNotifier<Set<String>> {
-  FavoritesNotifier() : super({});
+  final LocalStorageService _storageService;
+
+  // Charge l'état initial depuis le disque dès la création du provider
+  FavoritesNotifier(this._storageService)
+    : super(_storageService.getFavorites());
 
   void toggleFavorite(String productId) {
-    if (state.contains(productId)) {
-      state = Set.from(state)..remove(productId);
+    final newState = Set<String>.from(state);
+    if (newState.contains(productId)) {
+      newState.remove(productId);
     } else {
-      state = Set.from(state)..add(productId);
+      newState.add(productId);
     }
+    state = newState;
+    _storageService.saveFavorites(
+      state,
+    ); // Sauvegarde automatique et persistante
   }
 }
 
 final favoritesProvider = StateNotifierProvider<FavoritesNotifier, Set<String>>(
-  (ref) => FavoritesNotifier(),
+  (ref) {
+    final storage = ref.watch(localStorageServiceProvider);
+    return FavoritesNotifier(storage);
+  },
 );

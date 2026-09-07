@@ -1,13 +1,27 @@
 import 'package:flutter_riverpod/legacy.dart';
+import '../../domain/user_profile.dart';
 
-// 5. Profil PROOVIDER (stateProvider)
-class UserProfile {
-  final String name;
-  final String email;
+class ProfileNotifier extends StateNotifier<UserProfile> {
+  ProfileNotifier()
+    : super(
+        UserProfile(
+          name: 'Maniga Tokpa',
+          email: 'maniga.tokpa@example.com',
+          avatarUrl: 'https://picsum.photos',
+        ),
+      );
 
-  UserProfile({required this.name, required this.email});
+  void updateName(String newName) {
+    state = UserProfile(
+      name: newName,
+      email: state.email,
+      avatarUrl: state.avatarUrl,
+    );
+  }
 }
 
-final userProfileProvider = StateProvider<UserProfile>((ref) {
-  return UserProfile(name: 'Maniga Tokpa', email: 'maniga.tokpa@example.com');
+final profileProvider = StateNotifierProvider<ProfileNotifier, UserProfile>((
+  ref,
+) {
+  return ProfileNotifier();
 });

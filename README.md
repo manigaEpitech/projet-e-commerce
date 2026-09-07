@@ -1,98 +1,39 @@
-# 🛒 Flutter E-Commerce - Riverpod
+# 🛒 Flutter Riverpod E-Commerce Application
 
-Une application e-commerce moderne et performante développée avec **Flutter** et entièrement gérée par la solution d'état **Riverpod**. Ce projet respecte une architecture en couches stricte pour séparer proprement la logique métier de l'interface utilisateur.
+Application mobile d'e-commerce moderne conçue avec **Flutter** et s'appuyant sur **Riverpod** comme solution de gestion d'état centralisée et découplée.
 
----
+## 📐 Architecture du Projet
 
-## 📋 Table des matières
+Le projet respecte une architecture en couches stricte de type **Layer-First** afin de garantir la testabilité, la maintenabilité et une séparation claire des responsabilités :
 
-- [Fonctionnalités](#-fonctionnalités)
-- [Architecture du projet](#-architecture-du-projet)
-- [Gestion des fournisseurs (Providers)](#-gestion-des-fournisseurs-providers)
-- [Prérequis](#-prérequis)
-- [Installation et lancement](#-installation-et-lancement)
+- **`data/`** : Gestion des sources de données de l'application (Dépôt distant simulé via désérialisation JSON, gestionnaire de stockage persistant sur le disque local `SharedPreferences`).
+- **`domain/`** : Contient les entités métiers pures de confiance (`Product`, `CartItem`, `UserProfile`) découplées de toute logique applicative.
+- **`utils/`** : Outils partagés, structures de données transverses et énumérations (`ProductSort`).
+- **`presentation/`** :
+  - **`providers/`** : Couche logique métier intermédiaire via la mise en place de 5 fournisseurs d'état exclusifs Riverpod interconnectés.
+  - **`screens/`** : Déclaration des composants graphiques UI sans état interne.
 
----
+## 📊 Gestion de l'état (Mise en œuvre de 5 Fournisseurs)
 
-## ✨ Fonctionnalités
+1. **`productsFutureProvider`** (`FutureProvider`) : Effectue l'acquisition asynchrone des données produits depuis l'API simulée et expose l'état via un wrapper sécurisé `AsyncValue`.
+2. **`filterProvider`** (`StateNotifierProvider`) : Orchestre l'état des filtres sélectionnés (Catégorie courante et stratégie de tri sélectionnée).
+3. **`filteredProductsProvider`** (`Provider`) : Fournisseur de calcul combiné. Il réagit instantanément aux mutations conjointes du catalogue de produits et des filtres de tris pour exposer une liste ordonnée en temps réel.
+4. **`cartProvider`** (`StateNotifierProvider`) : Pilote le dictionnaire d'articles du panier d'achat (Ajout de produits, calculs des sommes totales, modifications incrémentales des volumes).
+5. **`favoritesProvider`** (`StateNotifierProvider`) : Gère la collection d'identifiants de produits marqués comme favoris par l'utilisateur.
 
-- **Catalogue complet :** Affichage d'une liste de produits avec gestion fine des états de chargement et d'erreur via `AsyncValue`.
-- **Détails produit :** Vue détaillée pour chaque article.
-- **Panier dynamique :** Ajout, modification des quantités et suppression d'articles en temps réel.
-- **Favoris locaux :** Sauvegarde et gestion du système de favoris directement sur l'appareil.
-- **Tri et filtrage :** Filtrage avancé des produits pour affiner la recherche.
-- **Profil utilisateur :** Écran de profil utilisateur complet (maquette).
+## 💾 Persistance des données locales
 
----
+Le système de favoris de l'application bénéficie d'une **persistance locale intégrale et transparente**. L'état est sauvegardé de manière asynchrone sur le disque de l'appareil hôte en tirant parti du package `shared_preferences`. Lors de l'initialisation de l'application, l'état initial du `favoritesProvider` est automatiquement extrait du stockage physique.
 
-## 🏗️ Architecture du projet
+## 🛠️ Lancement du Projet
 
-Le projet applique les principes de la séparation des préoccupations à travers la structure de dossiers suivante :
+```bash
+# Récupération des dépendances requises
+flutter pub get
 
-```text
-lib/
-├── main.dart
-├── data/
-│   └── product_repository.dart       # Simulation des données et appels API/JSON
-├── domain/
-│   └── product.dart                  # Modèles de données (Produit, Catégorie, etc.)
-└── presentation/
-    ├── providers/                    # Logique métier et gestion d'état (Riverpod)
-    │   ├── cart_provider.dart
-    │   ├── favorites_provider.dart
-    │   ├── filter_provider.dart
-    │   ├── products_provider.dart
-    │   └── profile_provider.dart
-    └── screens/                      # Widgets UI et Écrans de l'application
-        ├── catalog_screen.dart
-        ├── product_detail_screen.dart
-        ├── cart_screen.dart
-        └── profile_screen.dart
+# Lancement des tests unitaires et d'interface
+flutter test
+
+# Exécution de l'application en mode développement
+flutter run
 ```
-
----
-
-## 📊 Gestion des fournisseurs (Providers)
-
-L'application utilise **5 fournisseurs distincts** pour orchestrer l'état global sans coupler les widgets à la logique de données :
-
-1. **`productsProvider` (`FutureProvider`)** : Récupère de manière asynchrone la liste des produits depuis le dépôt de données et expose un état `AsyncValue` (Loading / Data / Error).
-2. **`cartProvider` (`StateNotifierProvider`)** : Encapsule la logique du panier d'achats (calcul des totaux, incrémentation et suppression).
-3. **`favoritesProvider` (`StateNotifierProvider`)** : Assure la gestion locale de la liste de souhaits.
-4. **`filterProvider` (`StateProvider` / `NotifierProvider`)** : Stocke et propage les critères de filtrage et de tri appliqués au catalogue.
-5. **`profileProvider` (`StateNotifierProvider`)** : Gère les informations de la maquette du profil utilisateur.
-
----
-
-## 📌 Prérequis
-
-Avant de lancer le projet, vérifiez que votre environnement dispose de :
-
-- **Flutter SDK** : `>=3.0.0`
-- **Dart SDK** : `>=3.0.0`
-- Un émulateur (iOS/Android) ou un appareil physique connecté.
-
----
-
-## 🛠️ Installation et lancement
-
-1. **Cloner le dépôt**
-   ```bash
-   git clone https://github.com
-   cd votre-projet-ecommerce
-   ```
-
-2. **Installer les dépendances**
-   ```bash
-   flutter pub get
-   ```
-
-3. **Générer le code (si utilisation de riverpod_generator)**
-   ```bash
-   flutter pub run build_runner build --delete-conflicting-outputs
-   ```
-
-4. **Lancer l'application**
-   ```bash
-   flutter run
-   ```

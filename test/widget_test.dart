@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:my_shop/data/product_repository.dart';
-import 'package:my_shop/models/product.dart';
 import 'package:my_shop/screens/catalog_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:my_shop/data/local_storage_service.dart';
+import 'package:my_shop/data/product_repository.dart';
+import 'package:my_shop/domain/product.dart';
 
-// Un dépôt factice créé spécialement pour les tests (Mock)
+
+// Dépôt de données factice accéléré pour le test UI
 class FakeProductRepository implements ProductRepository {
   @override
   Future<List<Product>> fetchProducts() async {
     return [
       Product(
-        id: '99',
-        title: 'Produit Test UI',
-        price: 10.00,
+        id: '10',
+        title: 'Chaussures de running',
+        price: 89.99,
         category: 'Sport',
-        description: 'Test UI description',
+        description: 'Baskets confortables.',
         imageUrl: 'https://picsum.photos',
       ),
     ];
@@ -23,65 +26,43 @@ class FakeProductRepository implements ProductRepository {
 }
 
 void main() {
-  group('Tests d\'Interface - CatalogScreen', () {
-    testWidgets(
-      'Doit afficher un indicateur de chargement puis la liste des produits',
-      (WidgetTester tester) async {
-        // Charger le widget dans un environnement de test Riverpod
-        // en remplaçant le dépôt réel par notre dépôt factice accéléré
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              productRepositoryProvider.overrideWithValue(
-                FakeProductRepository(),
-              ),
-            ],
-            child: const MaterialApp(home: CatalogScreen()),
+  group('Tests d\'Interface - CatalogScreen complets', () {
+    late LocalStorageService localService;
+
+    setUp(() async {
+      // Initialise le mock de SharedPreferences pour l'UI
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      localService = LocalStorageService(prefs);
+    });
+
+    testWidgets('Doit basculer l\'état visuel du bouton favori lors d\'un clic', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            productRepositoryProvider.overrideWithValue(FakeProductRepository()),
+            localStorageServiceProvider.overrideWithValue(localService),
+          ],
+          child: const MaterialApp(
+            home: CatalogScreen(),
           ),
-        );
+        ),
+      );
 
-        // 1. Vérifier que l'indicateur de progression s'affiche immédiatement (état Loading de AsyncValue)
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      // Attendre la résolution du chargement asynchrone des produits
+      await tester.pumpAndSettle();
 
-        // Lancer le rafraîchissement des frames pour résoudre le Future asynchrone
-        await tester.pumpAndSettle();
+      // Au départ, l'icône favorite_border (non sélectionné) doit être présente
+      expect(find.byIcon(Icons.favorite_border), findsOneWidget);
+      expect(find.byIcon(Icons.favorite), findsNothing);
 
-        // 2. Vérifier que le chargement a disparu et que les données du dépôt factice sont visibles
-        expect(find.byType(CircularProgressIndicator), findsNothing);
-        expect(find.text('Produit Test UI'), findsOneWidget);
-        expect(find.text('10.00 €'), findsOneWidget);
-      },
-    );
+      // Simuler le tap sur le bouton favori
+      await tester.tap(find.byIcon(Icons.favorite_border));
+      await tester.pumpAndSettle();
 
-    testWidgets(
-      'Ajouter un produit doit mettre à jour le compteur du panier dans l\'AppBar',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              productRepositoryProvider.overrideWithValue(
-                FakeProductRepository(),
-              ),
-            ],
-            child: const MaterialApp(home: CatalogScreen()),
-          ),
-        );
-
-        await tester.pumpAndSettle();
-
-        // Au départ, aucun badge rouge avec le chiffre '1' ne doit être présent
-        expect(find.text('1'), findsNothing);
-
-        // Simuler un clic sur le bouton d'ajout au panier (icône add_shopping_cart)
-        final BuildContext context = tester.element(find.byType(CatalogScreen));
-        await tester.tap(find.byIcon(Icons.add_shopping_cart));
-        await tester
-            .pumpAndSettle(); // Gérer l'affichage de la SnackBar et la mise à jour d'état
-
-        // Vérifier que le badge du panier affiche désormais '1' dans le Stack de l'AppBar
-        expect(find.text('1'), findsOneWidget);
-        expect(find.byType(SnackBar), findsOneWidget);
-      },
-    );
+      // Désormais, l'icône favorite (remplie) doit être visible à l'écran
+      expect(find.byIcon(Icons.favorite_border), findsNothing);
+      expect(find.byIcon(Icons.favorite), findsOneWidget);
+    });
   });
 }

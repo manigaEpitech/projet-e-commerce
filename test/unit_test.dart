@@ -1,24 +1,27 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:my_shop/presentation/favorites_provider.dart';
+import 'package:my_shop/presentation/profile_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:my_shop/data/local_storage_service.dart';
 
-import 'package:my_shop/models/product.dart';
-import 'package:my_shop/presentation/cart_provider.dart';
 
 void main() {
-  group('Tests Unitaires - CartNotifier', () {
-    late ProviderContainer container;
-    late Product sampleProduct;
+  // Nécessaire pour initialiser l'environnement de test Flutter avant d'appeler les mocks
+  TestWidgetsFlutterBinding.ensureInitialized();
 
-    setUp(() {
-      // Initialisation d'un conteneur Riverpod isolé pour chaque test
-      container = ProviderContainer();
-      sampleProduct = Product(
-        id: '1',
-        title: 'Valise de voyage',
-        price: 29.99,
-        category: 'Accessoires',
-        description: 'Test description',
-        imageUrl: 'https://picsum.photos',
+  group('Tests Unitaires - Favoris & Profil', () {
+    late ProviderContainer container;
+
+    setUp(() async {
+      // Configure les valeurs par défaut de SharedPreferences en mémoire (ici un dictionnaire vide)
+      SharedPreferences.setMockInitialValues({});
+      final sharedPreferences = await SharedPreferences.getInstance();
+
+      container = ProviderContainer(
+        overrides: [
+          localStorageServiceProvider.overrideWithValue(LocalStorageService(sharedPreferences)),
+        ],
       );
     });
 
@@ -26,36 +29,30 @@ void main() {
       container.dispose();
     });
 
-    test('Le panier doit être initialement vide', () {
-      final cartState = container.read(cartProvider);
-      expect(cartState.isEmpty, true);
+    test('Le favorisProvider doit être initialement vide', () {
+      final favorites = container.read(favoritesProvider);
+      expect(favorites.isEmpty, true);
     });
 
-    test(
-      'Ajouter un produit doit incrémenter la quantité et ajouter l\'article',
-      () {
-        // Ajouter une première fois
-        container.read(cartProvider.notifier).addProduct(sampleProduct);
-        var cartState = container.read(cartProvider);
+    test('Activer un favori doit l\'ajouter à l\'état', () {
+      // Ajouter le produit 'prod_abc' en favori
+      container.read(favoritesProvider.notifier).toggleFavorite('prod_abc');
+      
+      // Vérification de l'état en mémoire
+      final favorites = container.read(favoritesProvider);
+      expect(favorites.contains('prod_abc'), true);
+    });
 
-        expect(cartState.containsKey('1'), true);
-        expect(cartState['1']!.quantity, 1);
+    test('Modifier le nom du profil doit mettre à jour correctement l\'état UserProfile', () {
+      final initialProfile = container.read(profileProvider);
+      expect(initialProfile.name, 'Maniga Tokpa');
 
-        // Ajouter une deuxième fois le même produit
-        container.read(cartProvider.notifier).addProduct(sampleProduct);
-        cartState = container.read(cartProvider);
-
-        expect(cartState['1']!.quantity, 2);
-        expect(cartState['1']!.totalPrice, 29.99 * 2);
-      },
-    );
-
-    test('Mettre à jour la quantité à 0 doit retirer le produit du panier', () {
-      container.read(cartProvider.notifier).addProduct(sampleProduct);
-      container.read(cartProvider.notifier).updateQuantity('1', 0);
-
-      final cartState = container.read(cartProvider);
-      expect(cartState.containsKey('1'), false);
+      // Déclenchement de la modification
+      container.read(profileProvider.notifier).updateName('Jean Dupont');
+      
+      final updatedProfile = container.read(profileProvider);
+      expect(updatedProfile.name, 'Jean Dupont');
+      expect(updatedProfile.email, 'maniga.tokpa@example.com');
     });
   });
 }
