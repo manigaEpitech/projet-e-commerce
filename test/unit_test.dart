@@ -7,7 +7,7 @@ import 'package:my_shop/presentation/providers/filter_provider.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('Tests d\'état Riverpod', () {
+  group('Tests Unitaires - Providers', () {
     late ProviderContainer container;
 
     setUp(() async {
@@ -24,13 +24,17 @@ void main() {
 
     tearDown(() => container.dispose());
 
-    test('Le filtre par défaut doit être à Tous et aucun tri', () {
-      final state = container.read(filterProvider);
-      expect(state.category, 'Tous');
-      expect(state.sort, isNotNull);
-    });
+    test(
+      'Le profil doit initialiser son état par défaut et se mettre à jour',
+      () {
+        expect(container.read(profileProvider).name, 'Maniga Tokpa');
+        container.read(profileProvider.notifier).updateName('Jean');
+        expect(container.read(profileProvider).name, 'Jean');
+      },
+    );
 
-    test('Changer la catégorie doit modifier correctement l\'état', () {
+    test('Le filtre doit réagir aux modifications', () {
+      expect(container.read(filterProvider).category, 'Tous');
       container.read(filterProvider.notifier).setCategory('Sport');
       expect(container.read(filterProvider).category, 'Sport');
     });

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:my_shop/presentation/providers/filter_provider.dart';
-import '../../../domain/product.dart';
+import '../../domain/product.dart';
+import '../providers/filter_provider.dart';
 
 class ProductDetailScreen extends ConsumerWidget {
   final Product product;
@@ -19,26 +19,26 @@ class ProductDetailScreen extends ConsumerWidget {
             Center(
               child: Image.asset(
                 product.imageUrl,
-                height: 220,
-                errorBuilder: (_, _, _) =>
-                    const Icon(Icons.broken_image, size: 100),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              '${product.price.toStringAsFixed(2)} €',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: Colors.green,
-                fontWeight: FontWeight.bold,
+                height: 200,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(Icons.broken_image, size: 100);
+                },
               ),
             ),
             const SizedBox(height: 16),
             Text(
-              'Catégorie : ${product.category}',
-              style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 16),
+              product.title,
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${product.price} €',
+              style: const TextStyle(fontSize: 20, color: Colors.green),
             ),
             const SizedBox(height: 16),
-            Text(product.description, style: const TextStyle(fontSize: 16)),
+            Text(product.description),
+
             const Spacer(),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(

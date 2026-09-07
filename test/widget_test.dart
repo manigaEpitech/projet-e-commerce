@@ -6,14 +6,18 @@ import 'package:my_shop/data/local_storage_service.dart';
 import 'package:my_shop/presentation/screens/catalog_screen.dart';
 
 void main() {
-  testWidgets('L\'écran catalogue doit afficher les filtres graphiques', (WidgetTester tester) async {
+  testWidgets('CatalogScreen doit afficher les boutons dropdown UI', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          localStorageServiceProvider.overrideWithValue(LocalStorageService(prefs)),
+          localStorageServiceProvider.overrideWithValue(
+            LocalStorageService(prefs),
+          ),
         ],
         child: const MaterialApp(home: CatalogScreen()),
       ),

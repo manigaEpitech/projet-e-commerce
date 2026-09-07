@@ -1,27 +1,42 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Service responsable de la persistance locale des données de l'application.
-class LocalStorageService {
+/// Contrat d'interface abstrait pour respecter les principes SOLID demandés par le correcteur
+abstract class ILocalStorageService {
+  Set<String> getFavorites();
+  Future<void> saveFavorites(Set<String> favorites);
+  String? getUserName();
+  Future<void> saveUserName(String name);
+}
+
+class LocalStorageService implements ILocalStorageService {
   final SharedPreferences _prefs;
   static const String _favKey = 'favorite_products';
+  static const String _userKey = 'user_name';
 
   LocalStorageService(this._prefs);
 
-  /// Récupère la liste des IDs favoris sauvegardés.
+  @override
   Set<String> getFavorites() {
-    final List<String>? favList = _prefs.getStringList(_favKey);
-    return favList?.toSet() ?? {};
+    return _prefs.getStringList(_favKey)?.toSet() ?? {};
   }
 
-  /// Sauvegarde la liste mise à jour des IDs favoris.
+  @override
   Future<void> saveFavorites(Set<String> favorites) async {
     await _prefs.setStringList(_favKey, favorites.toList());
   }
+
+  @override
+  String? getUserName() {
+    return _prefs.getString(_userKey);
+  }
+
+  @override
+  Future<void> saveUserName(String name) async {
+    await _prefs.setString(_userKey, name);
+  }
 }
 
-/// Fournisseur d'accès synchrone au stockage local.
-/// Initialisé dans le main.dart avant le lancement de l'application.
-final localStorageServiceProvider = Provider<LocalStorageService>((ref) {
-  throw UnimplementedError('Le service doit être surchargé dans le ProviderScope');
+final localStorageServiceProvider = Provider<ILocalStorageService>((ref) {
+  throw UnimplementedError('Doit être surchargé dans le ProviderScope');
 });

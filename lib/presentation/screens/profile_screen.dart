@@ -12,30 +12,27 @@ class ProfileScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Profil')),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircleAvatar(
-                radius: 50,
-                backgroundImage: AssetImage(profile.avatarUrl),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                profile.name,
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              Text(profile.email, style: const TextStyle(color: Colors.grey)),
-              const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: () => ref
-                    .read(profileProvider.notifier)
-                    .updateName('Maniga Tokpa (Édité)'),
-                child: const Text('Modifier le nom'),
-              ),
-            ],
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 50,
+              backgroundImage: NetworkImage(profile.avatarUrl),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              profile.name,
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            Text(profile.email, style: const TextStyle(color: Colors.grey)),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => ref
+                  .read(profileProvider.notifier)
+                  .updateName('Maniga Tokpa (Certifié)'),
+              child: const Text('Modifier le nom (Sauvegarde locale)'),
+            ),
+          ],
         ),
       ),
     );

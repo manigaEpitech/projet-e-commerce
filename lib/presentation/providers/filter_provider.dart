@@ -6,36 +6,37 @@ import '../../domain/product.dart';
 import '../../domain/user_profile.dart';
 import '../../utils/product_sort_item.dart';
 
-// 1. Profil Utilisateur
+// 1. Profil Utilisateur avec persistance locale (Résout le Problème 3)
 class ProfileNotifier extends StateNotifier<UserProfile> {
-  ProfileNotifier()
+  final ILocalStorageService _storage;
+
+  ProfileNotifier(this._storage)
     : super(
         UserProfile(
-          name: 'Maniga Tokpa',
+          name: _storage.getUserName() ?? 'Maniga Tokpa',
           email: 'maniga.tokpa@example.com',
           avatarUrl: 'assets/images/profile.jpg',
         ),
       );
 
-  void  updateName(String newName) {
-    state = UserProfile(
-      name: newName,
-      email: state.email,
-      avatarUrl: state.avatarUrl,
-    );
+  void updateName(String newName) async {
+    state = state.copyWith(name: newName);
+    await _storage.saveUserName(newName);
   }
 }
 
-final profileProvider = StateNotifierProvider<ProfileNotifier, UserProfile>(
-  (ref) => ProfileNotifier(),
-);
+final profileProvider = StateNotifierProvider<ProfileNotifier, UserProfile>((
+  ref,
+) {
+  return ProfileNotifier(ref.watch(localStorageServiceProvider));
+});
 
-// 2. Récupération des Produits (Nom standard unique : productsProvider)
+// 2. Liste de base des produits
 final productsProvider = FutureProvider<List<Product>>((ref) async {
   return ref.watch(productRepositoryProvider).fetchProducts();
 });
 
-// 3. Gestion de l'état des filtres
+// 3. État des filtres
 class ProductFilterState {
   final String category;
   final ProductSort sort;
@@ -74,43 +75,46 @@ final filterProvider =
       (ref) => FilterNotifier(),
     );
 
-// 4. Combinaison synchrone Filtrée et Triée
+// 4. Fournisseur Filtré Refactorisé (Résout le Problème 5 et 7)
+// Il retourne désormais une AsyncValue transformée proprement à la source
 final filteredProductsProvider = Provider<AsyncValue<List<Product>>>((ref) {
   final productsAsync = ref.watch(productsProvider);
   final filter = ref.watch(filterProvider);
 
-  return productsAsync.whenData((products) {
-    List<Product> list = List.from(products);
-
-    if (filter.category != 'Tous') {
-      list = list.where((p) => p.category == filter.category).toList();
-    }
-
-    switch (filter.sort) {
-      case ProductSort.priceAsc:
-        list.sort((a, b) => a.price.compareTo(b.price));
-        break;
-      case ProductSort.priceDesc:
-        list.sort((a, b) => b.price.compareTo(a.price));
-        break;
-      case ProductSort.nameAsc:
-        list.sort(
-          (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
-        );
-        break;
-      case ProductSort.nameDesc:
-        list.sort(
-          (a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()),
-        );
-        break;
-      case ProductSort.none:
-        break;
-    }
-    return list;
-  });
+  return productsAsync.when(
+    data: (products) {
+      List<Product> list = List.from(products);
+      if (filter.category != 'Tous') {
+        list = list.where((p) => p.category == filter.category).toList();
+      }
+      switch (filter.sort) {
+        case ProductSort.priceAsc:
+          list.sort((a, b) => a.price.compareTo(b.price));
+          break;
+        case ProductSort.priceDesc:
+          list.sort((a, b) => b.price.compareTo(a.price));
+          break;
+        case ProductSort.nameAsc:
+          list.sort(
+            (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+          );
+          break;
+        case ProductSort.nameDesc:
+          list.sort(
+            (a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()),
+          );
+          break;
+        case ProductSort.none:
+          break;
+      }
+      return AsyncValue.data(list);
+    },
+    loading: () => const AsyncValue.loading(),
+    error: (err, stack) => AsyncValue.error(err, stack),
+  );
 });
 
-// 5. Gestionnaire du Panier
+// 5. Panier
 class CartNotifier extends StateNotifier<Map<String, CartItem>> {
   CartNotifier() : super({});
 
@@ -130,8 +134,7 @@ class CartNotifier extends StateNotifier<Map<String, CartItem>> {
   void updateQuantity(String productId, int quantity) {
     if (!state.containsKey(productId)) return;
     if (quantity <= 0) {
-      final newState = Map<String, CartItem>.from(state)..remove(productId);
-      state = newState;
+      state = Map<String, CartItem>.from(state)..remove(productId);
     } else {
       state = {
         ...state,
@@ -145,14 +148,12 @@ final cartProvider = StateNotifierProvider<CartNotifier, Map<String, CartItem>>(
   (ref) => CartNotifier(),
 );
 
-// 6. Gestionnaire des Favoris avec persistance
+// 6. Favoris découplés (Résout le Problème 4)
 class FavoritesNotifier extends StateNotifier<Set<String>> {
-  final LocalStorageService _storageService;
+  final ILocalStorageService _storage;
+  FavoritesNotifier(this._storage) : super(_storage.getFavorites());
 
-  FavoritesNotifier(this._storageService)
-    : super(_storageService.getFavorites());
-
-  void toggleFavorite(String productId) {
+  void toggleFavorite(String productId) async {
     final newState = Set<String>.from(state);
     if (newState.contains(productId)) {
       newState.remove(productId);
@@ -160,15 +161,12 @@ class FavoritesNotifier extends StateNotifier<Set<String>> {
       newState.add(productId);
     }
     state = newState;
-    _storageService.saveFavorites(
-      state,
-    ); // Sauvegarde persistante immédiate sur disque
+    await _storage.saveFavorites(state);
   }
 }
 
 final favoritesProvider = StateNotifierProvider<FavoritesNotifier, Set<String>>(
   (ref) {
-    final storage = ref.watch(localStorageServiceProvider);
-    return FavoritesNotifier(storage);
+    return FavoritesNotifier(ref.watch(localStorageServiceProvider));
   },
 );

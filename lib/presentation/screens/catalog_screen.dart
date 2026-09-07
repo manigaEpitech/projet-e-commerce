@@ -17,16 +17,13 @@ class CatalogScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Boutique High-Tech'),
+        title: const Text('Boutique Pro'),
         actions: const [_ProfileButton(), _CartButton()],
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 8.0,
-            ),
+            padding: const EdgeInsets.all(12.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -55,14 +52,6 @@ class CatalogScreen extends ConsumerWidget {
                       value: ProductSort.priceDesc,
                       child: Text('Prix Décroissant'),
                     ),
-                    DropdownMenuItem(
-                      value: ProductSort.nameAsc,
-                      child: Text('Nom (A-Z)'),
-                    ),
-                    DropdownMenuItem(
-                      value: ProductSort.nameDesc,
-                      child: Text('Nom (Z-A)'),
-                    ),
                   ],
                   onChanged: (val) =>
                       ref.read(filterProvider.notifier).setSort(val!),
@@ -72,56 +61,52 @@ class CatalogScreen extends ConsumerWidget {
           ),
           Expanded(
             child: productsAsync.when(
-              data: (products) {
-                if (products.isEmpty) {
-                  return const Center(child: Text('Aucun article trouvé.'));
-                }
-                return ListView.builder(
-                  itemCount: products.length,
-                  itemBuilder: (context, index) {
-                    final product = products[index];
-                    final isFav = ref
-                        .watch(favoritesProvider)
-                        .contains(product.id);
+              data: (products) => ListView.builder(
+                itemCount: products.length,
+                itemBuilder: (context, index) {
+                  final product = products[index];
+                  final isFav = ref
+                      .watch(favoritesProvider)
+                      .contains(product.id);
 
-                    return ListTile(
-                      leading: Image.asset(
-                        product.imageUrl,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(Icons.image),
-                      ),
-                      title: Text(product.title),
-                      subtitle: Text('${product.price.toStringAsFixed(2)} €'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              isFav ? Icons.favorite : Icons.favorite_border,
-                              color: isFav ? Colors.red : null,
-                            ),
-                            onPressed: () => ref
-                                .read(favoritesProvider.notifier)
-                                .toggleFavorite(product.id),
+                  return ListTile(
+                    leading: Image.asset(
+                      product.imageUrl,
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.broken_image);
+                      },
+                    ),
+                    title: Text(product.title),
+                    subtitle: Text('${product.price} €'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            isFav ? Icons.favorite : Icons.favorite_border,
+                            color: isFav ? Colors.red : null,
                           ),
-                          _ScaleAddToCartButton(product: product),
-                        ],
-                      ),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ProductDetailScreen(product: product),
+                          onPressed: () => ref
+                              .read(favoritesProvider.notifier)
+                              .toggleFavorite(product.id),
                         ),
+                        _AnimatedCartBtn(product: product),
+                      ],
+                    ),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ProductDetailScreen(product: product),
                       ),
-                    );
-                  },
-                );
-              },
+                    ),
+                  );
+                },
+              ),
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) =>
-                  Center(child: Text('Erreur de chargement : $err')),
+              error: (err, stack) => Center(child: Text('Erreur : $err')),
             ),
           ),
         ],
@@ -130,35 +115,34 @@ class CatalogScreen extends ConsumerWidget {
   }
 }
 
-class _ScaleAddToCartButton extends StatefulWidget {
+class _AnimatedCartBtn extends StatefulWidget {
   final Product product;
-  const _ScaleAddToCartButton({required this.product});
-
+  const _AnimatedCartBtn({required this.product});
   @override
-  State<_ScaleAddToCartButton> createState() => _ScaleAddToCartButtonState();
+  State<_AnimatedCartBtn> createState() => _AnimatedCartBtnState();
 }
 
-class _ScaleAddToCartButtonState extends State<_ScaleAddToCartButton>
+class _AnimatedCartBtnState extends State<_AnimatedCartBtn>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+  late AnimationController _c;
+  late Animation<double> _a;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    _c = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    _animation = Tween<double>(
+    _a = Tween<double>(
       begin: 1.0,
-      end: 1.25,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+      end: 1.3,
+    ).animate(CurvedAnimation(parent: _c, curve: Curves.easeInOut));
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _c.dispose();
     super.dispose();
   }
 
@@ -167,13 +151,13 @@ class _ScaleAddToCartButtonState extends State<_ScaleAddToCartButton>
     return Consumer(
       builder: (context, ref, child) {
         return ScaleTransition(
-          scale: _animation,
+          scale: _a,
           child: IconButton(
             icon: const Icon(Icons.add_shopping_cart, color: Colors.blue),
             onPressed: () async {
               ref.read(cartProvider.notifier).addProduct(widget.product);
-              await _controller.forward();
-              await _controller.reverse();
+              await _c.forward();
+              await _c.reverse();
             },
           ),
         );
@@ -216,11 +200,11 @@ class _CartButton extends ConsumerWidget {
             right: 4,
             top: 4,
             child: CircleAvatar(
-              radius: 7,
-              backgroundImage: Image.asset('assets/images/profile.png').image,
+              radius: 6,
+              backgroundColor: Colors.red,
               child: Text(
                 '${cart.length}',
-                style: const TextStyle(fontSize: 9, color: Colors.white),
+                style: const TextStyle(fontSize: 8, color: Colors.white),
               ),
             ),
           ),

@@ -18,33 +18,14 @@ class Product {
     required this.imageUrl,
   });
 
-  /// CORRIGÉ : Ajout de la méthode de désérialisation JSON manquante
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      price: (json['price'] as num).toDouble(),
-      category: json['category'] as String,
-      description: json['description'] as String,
-      imageUrl: json['imageUrl'] as String,
-    );
-  }
-
-  Product copyWith({
-    String? id,
-    String? title,
-    double? price,
-    String? category,
-    String? imageUrl,
-    String? description,
-  }) {
-    return Product(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      price: price ?? this.price,
-      category: category ?? this.category,
-      imageUrl: imageUrl ?? this.imageUrl,
-      description: description ?? this.description,
+      id: (json['id'] ?? '') as String,
+      title: (json['title'] ?? '') as String,
+      price: (json['price'] as num? ?? 0.0).toDouble(),
+      category: (json['category'] ?? 'Tous') as String,
+      description: (json['description'] ?? '') as String,
+      imageUrl: (json['imageUrl'] ?? '') as String,
     );
   }
 
