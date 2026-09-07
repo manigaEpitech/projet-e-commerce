@@ -19,7 +19,7 @@ class ProfileScreen extends ConsumerWidget {
             children: [
               CircleAvatar(
                 radius: 60,
-                backgroundImage: NetworkImage(profile.avatarUrl),
+                backgroundImage: AssetImage(profile.avatarUrl),
               ),
               const SizedBox(height: 24),
               Text(

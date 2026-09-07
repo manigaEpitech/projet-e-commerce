@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import '../data/product_repository.dart';
 import '../domain/product.dart';
 import '../utils/product_sort_item.dart';

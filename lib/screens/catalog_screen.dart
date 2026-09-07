@@ -84,10 +84,10 @@ class CatalogScreen extends ConsumerWidget {
                         .contains(product.id);
 
                     return ListTile(
-                      leading: Image.network(
+                      leading: Image.asset(
                         product.imageUrl,
                         width: 50,
-                        errorBuilder: (_, __, ___) =>
+                        errorBuilder: (_, _, _) =>
                             const Icon(Icons.broken_image),
                       ),
                       title: Text(product.title),

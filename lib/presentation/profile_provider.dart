@@ -7,7 +7,7 @@ class ProfileNotifier extends StateNotifier<UserProfile> {
         UserProfile(
           name: 'Maniga Tokpa',
           email: 'maniga.tokpa@example.com',
-          avatarUrl: 'https://picsum.photos',
+          avatarUrl: 'assets/images/profile.jpg',
         ),
       );
 

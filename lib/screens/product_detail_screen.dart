@@ -17,10 +17,10 @@ class ProductDetailScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-              child: Image.network(
+              child: Image.asset(
                 product.imageUrl,
                 height: 220,
-                errorBuilder: (_, __, ___) =>
+                errorBuilder: (_, _, _) =>
                     const Icon(Icons.broken_image, size: 100),
               ),
             ),

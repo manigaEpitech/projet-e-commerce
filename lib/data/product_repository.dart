@@ -16,7 +16,7 @@ class ProductRepository {
         'price': 29.99,
         'category': 'Accessoires',
         'description': 'Idéale pour vos longs séjours et week-ends.',
-        'imageUrl': 'https://picsum.photos',
+        'imageUrl': 'assets/images/valise_voyage.jpg',
       },
       {
         'id': '2',
@@ -24,7 +24,7 @@ class ProductRepository {
         'price': 49.99,
         'category': 'Électronique',
         'description': 'Éclairage LED tactile modulable à intensité variable.',
-        'imageUrl': 'https://picsum.photos',
+        'imageUrl': 'assets/images/lampe_bureau.jpg',
       },
       {
         'id': '3',
@@ -33,7 +33,7 @@ class ProductRepository {
         'category': 'Sport',
         'description':
             'Confortables, légères et stylées pour la course à pied.',
-        'imageUrl': 'https://picsum.photos',
+        'imageUrl': 'assets/images/sneakers_sport.jpg',
       },
       {
         'id': '4',
@@ -42,7 +42,7 @@ class ProductRepository {
         'category': 'Électronique',
         'description':
             'Son haute fidélité avec système de réduction active du bruit.',
-        'imageUrl': 'https://picsum.photos',
+        'imageUrl': 'assets/images/casque_audio.jpg',
       },
       {
         'id': '5',
@@ -51,7 +51,7 @@ class ProductRepository {
         'category': 'Accessoires',
         'description':
             'Résistant à l\'eau avec un compartiment renforcé pour ordinateur.',
-        'imageUrl': 'https://picsum.photos',
+        'imageUrl': 'assets/images/sac_dos.jpg',
       },
     ];
 
