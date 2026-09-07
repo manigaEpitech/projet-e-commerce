@@ -24,7 +24,7 @@ class ProductRepository {
         'price': 49.99,
         'category': 'Électronique',
         'description': 'Éclairage LED tactile modulable à intensité variable.',
-        'imageUrl': 'assets/images/lampe_bureau.jpg',
+        'imageUrl': 'assets/images/lampe_de_bureau.jpg',
       },
       {
         'id': '3',
@@ -33,7 +33,7 @@ class ProductRepository {
         'category': 'Sport',
         'description':
             'Confortables, légères et stylées pour la course à pied.',
-        'imageUrl': 'assets/images/sneakers_sport.jpg',
+        'imageUrl': 'assets/images/sneaker_sports.jpg',
       },
       {
         'id': '4',
@@ -51,7 +51,7 @@ class ProductRepository {
         'category': 'Accessoires',
         'description':
             'Résistant à l\'eau avec un compartiment renforcé pour ordinateur.',
-        'imageUrl': 'assets/images/sac_dos.jpg',
+        'imageUrl': 'assets/images/sack_a_dos.jpg',
       },
     ];
 
